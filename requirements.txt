@@ -1,0 +1,5 @@
+Flask
+ultralytics
+opencv-python
+Pillow
+python-dotenv

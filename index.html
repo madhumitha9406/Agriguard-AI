@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriGuard AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="page-shell">
+    <header class="navbar">
+        <div class="logo-wrap">
+            <div class="logo-mark">🌾</div>
+            <div class="logo-text">AgriGuard AI</div>
+        </div>
+        <nav class="main-nav" aria-label="Main navigation">
+            <a href="#how-it-works">How it works</a>
+            <a href="#features">Features</a>
+        </nav>
+        <div class="navbar-actions">
+            <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false">
+                <span aria-hidden="true">☾</span><span id="themeToggleLabel">Night view</span>
+            </button>
+            <div class="nav-status"><span class="live-dot"></span> SYSTEM ONLINE</div>
+        </div>
+    </header>
+
+    <main class="hero">
+        <section class="hero-text">
+            <p class="tag"><span class="tag-pulse"></span> AI-POWERED FARM SAFETY</p>
+            <h1>A safer farm<br>starts with <span>one scan.</span></h1>
+            <p class="description">
+                Spot wildlife before it reaches your crops. Capture a live photo
+                or upload an image for instant AI identification and risk insights.
+            </p>
+
+            <form action="/detect" method="POST" enctype="multipart/form-data" class="upload-form">
+                {% if error %}
+                <p class="form-error" role="alert">{{ error }}</p>
+                {% endif %}
+
+                <section class="scan-card" aria-labelledby="camera-heading">
+                    <div class="camera-heading">
+                        <div>
+                            <p class="camera-kicker"><span class="camera-kicker-icon">✦</span> YOUR NEXT SCAN</p>
+                            <h2 id="camera-heading">Choose a way to scan</h2>
+                        </div>
+                        <span class="camera-indicator"><span></span> AI READY</span>
+                    </div>
+
+                    <div class="source-toggle" role="group" aria-label="Choose image source">
+                        <button class="source-option active" type="button" data-source="upload"><span>▧</span> Upload image</button>
+                        <button class="source-option" type="button" data-source="camera"><span>◉</span> Use camera</button>
+                    </div>
+
+                    <div class="upload-pane" id="uploadPane">
+                        <label class="upload-box" id="dropZone" for="imageUpload">
+                            <img id="imagePreview" class="image-preview" alt="Selected image preview" hidden>
+                            <span class="upload-icon" id="uploadIcon">↥</span>
+                            <span class="upload-title" id="uploadTitle">Drop your image here</span>
+                            <span class="upload-subtitle" id="fileHelp">or click to browse · JPG, PNG or WEBP</span>
+                            <input id="imageUpload" type="file" name="image" accept="image/jpeg,image/png,image/webp">
+                        </label>
+                    </div>
+
+                    <div class="camera-pane" id="cameraPane" hidden>
+                        <div class="camera-preview" id="cameraPreview" hidden>
+                            <video id="cameraVideo" autoplay playsinline muted></video>
+                            <span class="camera-live"><span></span> LIVE</span>
+                            <div class="camera-crosshair" aria-hidden="true"></div>
+                        </div>
+                        <div class="camera-actions">
+                            <button class="secondary-button" id="startCamera" type="button">Start camera</button>
+                            <button class="secondary-button" id="capturePhoto" type="button" disabled>Capture photo</button>
+                            <button class="secondary-button stop-button" id="stopCamera" type="button" disabled>Stop</button>
+                        </div>
+                    </div>
+
+                    <p class="camera-status" id="cameraStatus" role="status">Your images stay on this device until you choose to analyze them.</p>
+                    <button class="notification-button" id="enableAlerts" type="button" hidden>Enable desktop alerts</button>
+                    <div class="sound-controls">
+                        <div class="sound-buttons">
+                            <button class="notification-button sound-toggle" id="toggleAlertSound" type="button" aria-pressed="false">🔇 Enable alert sound</button>
+                            <button class="notification-button sound-test" id="playAlertSound" type="button" hidden>▶ Test sound</button>
+                        </div>
+                        <p class="sound-status" id="soundStatus" role="status">Alert sound is off. Turn it on to hear high-risk alerts.</p>
+                    </div>
+                    <canvas id="cameraCanvas" hidden></canvas>
+                    <button class="analyze-button" id="analyzeButton" type="submit">
+                        <span class="analyze-icon">✦</span>
+                        <span id="analyzeLabel">Analyze image</span>
+                        <span class="analyze-arrow">→</span>
+                    </button>
+                    <div class="scan-progress" id="scanProgress" hidden>
+                        <span class="spinner"></span>
+                        <span>Analyzing image with AI…</span>
+                    </div>
+                    <p class="privacy-note"><span>◇</span> Secure scan · No account required</p>
+                </section>
+            </form>
+        </section>
+
+        <aside class="hero-card">
+            <div class="card-header">
+                <span><span class="monitor-spark">✦</span> FIELD INTELLIGENCE</span>
+                <span class="green"><span class="live-dot"></span> ONLINE</span>
+            </div>
+
+            <div class="radar-panel">
+                <div class="radar-sweep"></div>
+                <div class="radar-ring ring-one"></div>
+                <div class="radar-ring ring-two"></div>
+                <div class="radar-ring ring-three"></div>
+                <div class="radar-dot dot-one"></div>
+                <div class="radar-dot dot-two"></div>
+                <div class="radar-animal">🐘<span class="animal-glow"></span></div>
+                <span class="radar-label radar-label-one">AI SCAN</span>
+                <span class="radar-label radar-label-two">FIELD 01</span>
+            </div>
+
+            <div class="monitor-copy">
+                <p class="monitor-kicker">SMART PROTECTION</p>
+                <h2>Know what’s<br>out there.</h2>
+                <p>Turn a field image into clear, actionable wildlife insights in seconds.</p>
+            </div>
+
+            <div class="stats">
+                <div>
+                    <strong>01</strong>
+                    <small>Capture</small>
+                </div>
+                <div>
+                    <strong>02</strong>
+                    <small>Identify</small>
+                </div>
+                <div>
+                    <strong>03</strong>
+                    <small>Respond</small>
+                </div>
+            </div>
+            <div class="monitor-foot"><span class="monitor-foot-icon">✓</span> Built for the people who grow our food</div>
+        </aside>
+    </main>
+
+    <section class="features-section" id="features">
+        <div class="section-heading">
+            <div>
+                <p class="section-kicker">A CLEARER VIEW OF YOUR FARM</p>
+                <h2>From first sighting<br>to confident action.</h2>
+            </div>
+            <p>Simple tools that help you see a potential problem early and decide what to do next.</p>
+        </div>
+        <div class="features" id="how-it-works">
+            <article class="feature-card">
+                <div class="feature-topline"><span class="feature-number">01</span><span class="feature-icon">⌕</span></div>
+                <h3>See the whole picture</h3>
+                <p>Upload a field photo or snap a frame with your device camera.</p>
+                <span class="feature-link">CAMERA + UPLOAD <span>↗</span></span>
+            </article>
+            <article class="feature-card">
+                <div class="feature-topline"><span class="feature-number">02</span><span class="feature-icon">✳</span></div>
+                <h3>Know what’s nearby</h3>
+                <p>Computer vision identifies supported animals and shares its confidence.</p>
+                <span class="feature-link">AI IDENTIFICATION <span>↗</span></span>
+            </article>
+            <article class="feature-card">
+                <div class="feature-topline"><span class="feature-number">03</span><span class="feature-icon">↗</span></div>
+                <h3>Respond with clarity</h3>
+                <p>Understand the risk at a glance and get a visual and optional sound alert for high-risk sightings.</p>
+                <span class="feature-link">RISK + ALERTS <span>↗</span></span>
+            </article>
+        </div>
+    </section>
+</div>
+<script src="{{ url_for('static', filename='alert.js') }}" defer></script>
+<script>
+    const themeToggle = document.getElementById("themeToggle");
+    const themeToggleLabel = document.getElementById("themeToggleLabel");
+    const savedTheme = window.localStorage.getItem("agriguard-theme");
+
+    function setTheme(isNight) {
+        document.body.classList.toggle("night-mode", isNight);
+        themeToggle.setAttribute("aria-pressed", String(isNight));
+        themeToggle.querySelector("[aria-hidden='true']").textContent = isNight ? "☀" : "☾";
+        themeToggleLabel.textContent = isNight ? "Day view" : "Night view";
+        window.localStorage.setItem("agriguard-theme", isNight ? "night" : "day");
+    }
+
+    setTheme(savedTheme === "night");
+    themeToggle.addEventListener("click", () => {
+        setTheme(!document.body.classList.contains("night-mode"));
+    });
+
+    const video = document.getElementById("cameraVideo");
+    const cameraPreview = document.getElementById("cameraPreview");
+    const cameraStatus = document.getElementById("cameraStatus");
+    const imageInput = document.getElementById("imageUpload");
+    const fileHelp = document.getElementById("fileHelp");
+    const startCameraButton = document.getElementById("startCamera");
+    const captureButton = document.getElementById("capturePhoto");
+    const stopCameraButton = document.getElementById("stopCamera");
+    const cameraCanvas = document.getElementById("cameraCanvas");
+    const uploadPane = document.getElementById("uploadPane");
+    const cameraPane = document.getElementById("cameraPane");
+    const imagePreview = document.getElementById("imagePreview");
+    const uploadIcon = document.getElementById("uploadIcon");
+    const uploadTitle = document.getElementById("uploadTitle");
+    const dropZone = document.getElementById("dropZone");
+    const scanProgress = document.getElementById("scanProgress");
+    const analyzeButton = document.getElementById("analyzeButton");
+    const analyzeLabel = document.getElementById("analyzeLabel");
+    let cameraStream;
+    let previewUrl;
+
+    function setSource(source) {
+        const usingCamera = source === "camera";
+        uploadPane.hidden = usingCamera;
+        cameraPane.hidden = !usingCamera;
+        document.querySelectorAll(".source-option").forEach((button) => {
+            const selected = button.dataset.source === source;
+            button.classList.toggle("active", selected);
+            button.setAttribute("aria-pressed", String(selected));
+        });
+        if (usingCamera && imageInput.files.length) {
+            imageInput.value = "";
+            resetPreview();
+        }
+        if (!usingCamera && cameraStream) {
+            stopCamera();
+        }
+        cameraStatus.textContent = usingCamera
+            ? "Allow camera access to capture a field photo for analysis."
+            : "Your images stay on this device until you choose to analyze them.";
+    }
+
+    function resetPreview() {
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            previewUrl = null;
+        }
+        imagePreview.hidden = true;
+        imagePreview.removeAttribute("src");
+        uploadIcon.hidden = false;
+        uploadTitle.textContent = "Drop your image here";
+        fileHelp.textContent = "or click to browse · JPG, PNG or WEBP";
+    }
+
+    function displaySelectedFile(file) {
+        if (!file) {
+            resetPreview();
+            return;
+        }
+        if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+            imageInput.value = "";
+            resetPreview();
+            cameraStatus.textContent = "Choose a JPG, PNG, or WEBP image.";
+            return;
+        }
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+        }
+        previewUrl = URL.createObjectURL(file);
+        imagePreview.src = previewUrl;
+        imagePreview.hidden = false;
+        uploadIcon.hidden = true;
+        uploadTitle.textContent = "Image ready to scan";
+        fileHelp.textContent = file.name;
+        cameraStatus.textContent = "Image selected. Analyze it to identify animals and assess risk.";
+    }
+
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach((track) => track.stop());
+            cameraStream = null;
+        }
+        video.srcObject = null;
+        cameraPreview.hidden = true;
+        captureButton.disabled = true;
+        stopCameraButton.disabled = true;
+        startCameraButton.disabled = false;
+        document.querySelector(".camera-indicator").innerHTML = "<span></span> AI READY";
+        document.querySelector(".camera-live").hidden = true;
+    }
+
+    document.querySelectorAll(".source-option").forEach((button) => {
+        button.addEventListener("click", () => setSource(button.dataset.source));
+    });
+
+    startCameraButton.addEventListener("click", async () => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            cameraStatus.textContent = "Camera access is unavailable in this browser. Use localhost or HTTPS, or upload an image.";
+            return;
+        }
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: "environment" } },
+                audio: false
+            });
+            video.srcObject = cameraStream;
+            cameraPreview.hidden = false;
+            document.querySelector(".camera-live").hidden = false;
+            captureButton.disabled = false;
+            stopCameraButton.disabled = false;
+            startCameraButton.disabled = true;
+            document.querySelector(".camera-indicator").innerHTML = "<span></span> CAMERA ON";
+            cameraStatus.textContent = "Camera is on. Capture a frame when an animal is in view.";
+        } catch (error) {
+            if (error.name === "NotAllowedError") {
+                cameraStatus.textContent = "Camera permission was denied. Allow camera access or upload an image.";
+            } else if (error.name === "NotFoundError") {
+                cameraStatus.textContent = "No camera was found on this device. You can upload an image instead.";
+            } else {
+                cameraStatus.textContent = "Unable to start the camera. Check that a camera is connected, or upload an image.";
+            }
+        }
+    });
+
+    captureButton.addEventListener("click", async () => {
+        if (!video.videoWidth || !video.videoHeight) {
+            cameraStatus.textContent = "The camera is still starting. Try capturing again in a moment.";
+            return;
+        }
+        cameraCanvas.width = video.videoWidth;
+        cameraCanvas.height = video.videoHeight;
+        cameraCanvas.getContext("2d").drawImage(video, 0, 0);
+        const imageBlob = await new Promise((resolve) => cameraCanvas.toBlob(resolve, "image/jpeg", 0.92));
+        if (!imageBlob) {
+            cameraStatus.textContent = "Could not capture a photo. Please try again.";
+            return;
+        }
+        const capturedImage = new File([imageBlob], "camera-capture.jpg", { type: "image/jpeg" });
+        const transfer = new DataTransfer();
+        transfer.items.add(capturedImage);
+        imageInput.files = transfer.files;
+        setSource("upload");
+        displaySelectedFile(capturedImage);
+        cameraStatus.textContent = "Photo captured. Select Analyze with AI to identify animals and assess risk.";
+        stopCamera();
+    });
+
+    stopCameraButton.addEventListener("click", stopCamera);
+    imageInput.addEventListener("change", () => {
+        displaySelectedFile(imageInput.files[0]);
+    });
+
+    dropZone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        dropZone.classList.add("dragging");
+    });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragging"));
+    dropZone.addEventListener("drop", (event) => {
+        event.preventDefault();
+        dropZone.classList.remove("dragging");
+        const [file] = event.dataTransfer.files;
+        if (file) {
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            imageInput.files = transfer.files;
+            displaySelectedFile(file);
+        }
+    });
+
+    document.querySelector(".upload-form").addEventListener("submit", (event) => {
+        if (!imageInput.files.length) {
+            event.preventDefault();
+            cameraStatus.textContent = "Capture a camera photo or choose an image before starting the scan.";
+            return;
+        }
+        stopCamera();
+        analyzeButton.disabled = true;
+        analyzeLabel.textContent = "Scanning…";
+        scanProgress.hidden = false;
+    });
+    window.addEventListener("pagehide", stopCamera);
+
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add("is-visible");
+                revealObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    document.querySelectorAll(".feature-card, .section-heading").forEach((element) => {
+        element.classList.add("reveal");
+        revealObserver.observe(element);
+    });
+
+    const enableAlertsButton = document.getElementById("enableAlerts");
+    if ("Notification" in window) {
+        enableAlertsButton.hidden = false;
+        enableAlertsButton.addEventListener("click", async () => {
+            const permission = await Notification.requestPermission();
+            cameraStatus.textContent = permission === "granted"
+                ? "Desktop alerts enabled for high-risk detections."
+                : "Desktop alerts were not enabled. On-screen alerts will still be shown.";
+            if (permission === "granted") {
+                enableAlertsButton.textContent = "Desktop alerts enabled";
+                enableAlertsButton.disabled = true;
+            }
+        });
+    }
+</script>
+</body>
+</html>

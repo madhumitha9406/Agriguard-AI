@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>AgriGuard AI - Detection</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="navbar">
+
+    <div class="logo">🌾 AgriGuard AI</div>
+
+    <div class="nav-status">
+        ● ANALYSIS COMPLETE
+    </div>
+
+</div>
+
+<div class="result-container">
+
+    <h1>Wildlife Detection Result</h1>
+
+    <p class="description">
+        AI analysis of your uploaded farm image
+    </p>
+
+    <div class="result-grid">
+
+        <div class="image-card">
+
+            <h3>Analyzed Image</h3>
+
+            <img src="{{ image }}"
+                 class="result-image">
+
+        </div>
+
+        <div class="detection-card">
+
+            <h3>Detection Report</h3>
+
+            {% if detections %}
+
+                {% for item in detections %}
+
+                <div class="animal-result">
+
+                    <div>
+
+                        <h2>
+                            🐾 {{ item.animal|capitalize }}
+                        </h2>
+
+                        <p>
+                            Confidence:
+                            {{ item.confidence }}%
+                        </p>
+
+                    </div>
+
+                    <div class="risk {{ item.risk|lower }}">
+
+                        {{ item.risk }}
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="safe">
+
+                    <h2>✅ No Wildlife Detected</h2>
+
+                    <p>
+                        No supported wildlife was detected
+                        in this image.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <a href="/" class="back-button">
+        ← Analyze Another Image
+    </a>
+
+</div>
+
+</body>
+</html>

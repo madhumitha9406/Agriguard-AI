@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriGuard AI - Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="page-shell">
+    <header class="navbar">
+        <div class="logo-wrap">
+            <div class="logo-mark">🌾</div>
+            <div class="logo-text">AgriGuard AI</div>
+        </div>
+        <div class="nav-status">● ANALYSIS COMPLETE</div>
+    </header>
+
+    <main class="result-container">
+        <div class="result-header">
+            <div>
+                <p class="section-kicker">YOUR FIELD SCAN</p>
+                <h1>Wildlife scan <span>report</span></h1>
+                <p>Animal identification and risk assessment from your AI scan.</p>
+            </div>
+            <a href="/" class="back-button header-action">＋ New scan</a>
+        </div>
+
+        {% if alert_level %}
+        <section class="threat-alert {{ alert_level|lower }}"
+                 role="{{ 'alert' if alert_level in ['HIGH', 'CRITICAL'] else 'status' }}"
+                 aria-live="{{ 'assertive' if alert_level in ['HIGH', 'CRITICAL'] else 'polite' }}">
+            <span class="alert-icon" aria-hidden="true">⚠</span>
+            <div>
+                <p class="alert-eyebrow">{{ alert_level }} RISK ALERT</p>
+                <h2>{{ alert_animals|join(", ") }} detected</h2>
+                <p>{{ alert_message }}</p>
+                <div class="crop-impact">
+                    <strong>{{ alert_level }} CROP &amp; FARMER YIELD IMPACT</strong>
+                    <p>{{ crop_impact_message }}</p>
+                </div>
+                {% if alert_level in ['HIGH', 'CRITICAL'] %}
+                <div class="sound-controls result-sound-controls">
+                    <div class="sound-buttons">
+                        <button class="notification-button sound-toggle" id="toggleAlertSound" type="button" aria-pressed="false">🔇 Enable alert sound</button>
+                        <button class="notification-button sound-test" id="playAlertSound" type="button" hidden>▶ Play alert sound</button>
+                    </div>
+                    <p class="sound-status" id="soundStatus" role="status">Turn on the alert tone, or play it now.</p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="result-summary" aria-label="Scan summary">
+            <article class="summary-tile">
+                <span class="summary-icon">⌕</span>
+                <div><strong>{{ detections|length }}</strong><span>Animals found</span></div>
+            </article>
+            <article class="summary-tile">
+                <span class="summary-icon risk-summary-icon">⚑</span>
+                <div><strong>{{ detections|selectattr("risk", "in", ["HIGH", "CRITICAL"])|list|length }}</strong><span>High-risk alerts</span></div>
+            </article>
+            <article class="summary-tile">
+                <span class="summary-icon">◷</span>
+                <div><strong>Just now</strong><span>Scan completed</span></div>
+            </article>
+            <div class="summary-status"><span></span> AI ANALYSIS COMPLETE</div>
+        </section>
+        <p class="camera-status" role="status">{{ prediction_note }}</p>
+
+        <div class="result-grid">
+            <section class="image-card">
+                <div class="panel-heading">
+                    <div><p class="panel-kicker">SCAN SOURCE</p><h2>Analyzed image</h2></div>
+                    <span class="image-badge">✦ AI SCANNED</span>
+                </div>
+                <button type="button" class="image-zoom" id="openImage" aria-label="View analyzed image larger">
+                    <img src="{{ image }}" class="result-image" alt="Image analyzed by AgriGuard AI">
+                    <span class="zoom-hint">↗ Click to expand</span>
+                </button>
+                <p class="image-caption"><span>◇</span> Original scan image · Processed securely</p>
+            </section>
+
+            <section class="detection-card">
+                <div class="panel-heading detection-heading">
+                    <div><p class="panel-kicker">WHAT WE FOUND</p><h2>Detection report</h2></div>
+                    <span class="detection-count">{{ detections|length }} total</span>
+                </div>
+                {% if detections %}
+                    <div class="filter-bar" role="group" aria-label="Filter detections by risk">
+                        <button type="button" class="filter-chip active" data-filter="all" aria-pressed="true">All <span>{{ detections|length }}</span></button>
+                        <button type="button" class="filter-chip" data-filter="critical" aria-pressed="false">Critical <span>{{ detections|selectattr("risk", "equalto", "CRITICAL")|list|length }}</span></button>
+                        <button type="button" class="filter-chip" data-filter="high" aria-pressed="false">High <span>{{ detections|selectattr("risk", "equalto", "HIGH")|list|length }}</span></button>
+                        <button type="button" class="filter-chip" data-filter="medium" aria-pressed="false">Medium <span>{{ detections|selectattr("risk", "equalto", "MEDIUM")|list|length }}</span></button>
+                        <button type="button" class="filter-chip" data-filter="low" aria-pressed="false">Low <span>{{ detections|selectattr("risk", "equalto", "LOW")|list|length }}</span></button>
+                    </div>
+                    <p class="empty-filter" id="emptyFilter" hidden>No detections match this risk level.</p>
+                    {% for item in detections %}
+                    <article class="animal-result detection-row" data-risk="{{ item.risk|lower }}">
+                        <div class="animal-avatar {{ item.risk|lower }}" aria-hidden="true">
+                            {% if item.animal == "elephant" %}🐘{% elif item.animal == "bear" %}🐻{% elif item.animal == "bird" %}🐦{% elif item.animal == "cow" %}🐄{% elif item.animal == "horse" %}🐎{% elif item.animal == "sheep" %}🐑{% elif item.animal == "cat" %}🐈{% elif item.animal == "leopard" or item.animal == "jaguar" %}🐆{% elif item.animal == "dog" %}🐕{% elif item.animal == "lion" %}🦁{% elif item.animal == "deer" %}🦌{% elif item.animal == "tiger" %}🐯{% elif item.animal == "zebra" %}🦓{% elif item.animal == "giraffe" %}🦒{% else %}🐾{% endif %}
+                        </div>
+                        <div class="animal-info">
+                            <div class="animal-title-line">
+                                <h3>{{ item.animal|capitalize }}</h3>
+                                <span class="risk {{ item.risk|lower }}">{{ item.risk }}</span>
+                            </div>
+                            <div class="confidence-line"><span>Model score</span><strong>{{ item.confidence }}%</strong></div>
+                            <div class="confidence-track"><span style="--confidence: {{ item.confidence }}%"></span></div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                {% else %}
+                    <div class="safe">
+                        <span class="safe-icon">✓</span>
+                        <h3>No animals identified</h3>
+                        <p>No supported animal was confirmed in this image. Try a clearer image with the animal in view; AI scans can miss animals.</p>
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <footer class="result-footer">
+            <span>AgriGuard AI <span class="footer-dot">·</span> Smart protection for every field</span>
+            <a href="/">← Back to dashboard</a>
+        </footer>
+    </main>
+</div>
+<dialog class="image-dialog" id="imageDialog" aria-label="Analyzed image enlarged">
+    <button type="button" class="dialog-close" id="closeImage" aria-label="Close image">×</button>
+    <img src="{{ image }}" alt="Enlarged analyzed farm image">
+</dialog>
+<script src="{{ url_for('static', filename='alert.js') }}" defer></script>
+<script>
+    const filterButtons = document.querySelectorAll(".filter-chip");
+    const detectionRows = document.querySelectorAll(".detection-row");
+    const emptyFilter = document.getElementById("emptyFilter");
+
+    filterButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            const filter = button.dataset.filter;
+            let visibleCount = 0;
+            filterButtons.forEach((chip) => {
+                const active = chip === button;
+                chip.classList.toggle("active", active);
+                chip.setAttribute("aria-pressed", String(active));
+            });
+            detectionRows.forEach((row) => {
+                const visible = filter === "all" || row.dataset.risk === filter;
+                row.hidden = !visible;
+                if (visible) visibleCount += 1;
+            });
+            emptyFilter.hidden = visibleCount !== 0;
+        });
+    });
+
+    const imageDialog = document.getElementById("imageDialog");
+    document.getElementById("openImage").addEventListener("click", () => imageDialog.showModal());
+    document.getElementById("closeImage").addEventListener("click", () => imageDialog.close());
+    imageDialog.addEventListener("click", (event) => {
+        if (event.target === imageDialog) imageDialog.close();
+    });
+</script>
+{% if alert_level %}
+<script>
+    window.addEventListener("load", () => {
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("AgriGuard AI — {{ alert_level }} risk", {
+                body: {{ (alert_animals|join(", ") ~ " detected. " ~ alert_message)|tojson }}
+            });
+        }
+    });
+</script>
+{% endif %}
+</body>
+</html>
